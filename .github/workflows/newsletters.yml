@@ -1,0 +1,63 @@
+name: Weekly Newsletters — Monday 09:30 UK
+
+on:
+  schedule:
+    # 08:30 UTC = 09:30 BST (UK summer, March–October)
+    # Change to 09:30 UTC in winter (October–March) when UK reverts to GMT
+    - cron: '30 8 * * 1'
+
+  workflow_dispatch:   # Lets you trigger both manually from GitHub anytime
+
+jobs:
+
+  capital-chronicle:
+    name: The Capital Chronicle (Private Credit)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Send Capital Chronicle
+        env:
+          GEMINI_API_KEY:     ${{ secrets.GEMINI_API_KEY }}
+          GMAIL_ADDRESS:      ${{ secrets.GMAIL_ADDRESS }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          SEND_TO_EMAIL:      ${{ secrets.SEND_TO_EMAIL }}
+        run: python general_digest.py
+      - name: Upload log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: capital-chronicle-error
+          path: "*.log"
+
+  firm-intelligence:
+    name: The Firm Intelligence Digest
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Send Firm Intelligence Digest
+        env:
+          GEMINI_API_KEY:     ${{ secrets.GEMINI_API_KEY }}
+          GMAIL_ADDRESS:      ${{ secrets.GMAIL_ADDRESS }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          SEND_TO_EMAIL:      ${{ secrets.SEND_TO_EMAIL }}
+        run: python firm_digest.py
+      - name: Upload log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: firm-digest-error
+          path: "*.log"
